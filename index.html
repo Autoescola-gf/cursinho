@@ -128,9 +128,9 @@
 
     </div>
 
-    <script>
+ <script>
         // === CONFIGURAÇÃO GLOBAL ===
-        const TEMPO_LIMITE_SEGUNDOS = 60; // 5 minutos (AJUSTE AQUI)
+        const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (AJUSTE AQUI. Ex: 3600 para 1 hora)
         const TEMPO_LIMITE_MS = TEMPO_LIMITE_SEGUNDOS * 1000;
         
         // VARIÁVEL PARA O CONTADOR ATIVO
@@ -141,6 +141,9 @@
         const isBypass = urlParams.get('bypass') === 'true';
         const isClear = urlParams.get('clear') === 'true';
         
+        // Função auxiliar para formatar com zero à esquerda (01, 05, etc.)
+        const pad = (num) => String(num).padStart(2, '0');
+
         // --- 1. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO ---
         function initializeTimer(courseId, storageKey) {
             // Limpa o contador anterior se houver
@@ -183,15 +186,24 @@
                 intervaloContador = setInterval(function() {
                     const agora = Date.now();
                     const decorrido = agora - inicioVisualizacao;
-                    const restanteMS = TEMPO_LIMITE_MS - decorrido;
+                    let restanteMS = TEMPO_LIMITE_MS - decorrido;
                     
                     if (restanteMS <= 0) {
                         areaDoVideo.classList.add('hidden');
                         mensagemExp.classList.remove('hidden');
                         clearInterval(intervaloContador);
                     } else {
-                        const segundos = Math.ceil(restanteMS / 1000);
-                        mensagemTempoRestante.innerHTML = `Disponível por: **${segundos} segundos** restantes.`; 
+                        // --- LÓGICA DE CONVERSÃO PARA HH:MM:SS ---
+                        let totalSeconds = Math.floor(restanteMS / 1000);
+
+                        const hours = Math.floor(totalSeconds / 3600);
+                        totalSeconds %= 3600;
+                        const minutes = Math.floor(totalSeconds / 60);
+                        const seconds = totalSeconds % 60;
+                        
+                        const timeFormat = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+
+                        mensagemTempoRestante.innerHTML = `Disponível por: ${timeFormat}`; 
                     }
                 }, 1000);
             }
@@ -243,4 +255,5 @@
     </script>
 </body>
 </html>
+
 
