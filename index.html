@@ -77,8 +77,8 @@
     <div class="page-container">
 
         <div class="button-container">
-            <button class="course-button active" onclick="showCourse('course1')">Aula 1 & 2</button>
-            <button class="course-button" onclick="showCourse('course2')">Aula 3</button>
+            <button class="course-button active" onclick="showCourse('course1')">Aula 1</button>
+            <button class="course-button" onclick="showCourse('course2')">Aula 2</button>
         </div>
 
         <div id="course1" class="video-block">
@@ -133,6 +133,253 @@
         
         // Garante que o Curso 1 esteja visível na carga inicial (já que o Curso 2 tem a classe 'hidden')
         showCourse('course1'); 
+    </script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CURSOS COM EXPIRAÇÃO E NAVEGAÇÃO</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            text-align: center;
+        }
+        .page-container {
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        .video-block {
+            background-color: #34495e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #f1c40f;
+            border-bottom: 2px solid #f1c40f;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Estilos dos botões */
+        .button-container {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #4a6784;
+            padding-bottom: 15px;
+        }
+        .course-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .course-button.active {
+            background-color: #f1c40f;
+            color: #2c3e50;
+        }
+        .course-button:not(.active) {
+            background-color: #5d7d9a;
+            color: #ecf0f1;
+        }
+        /* Estilos de Timer/Expiração */
+        #mensagemExpiracao {
+            display: none; 
+            color: #e74c3c;
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+        .alerta-restante {
+            background-color: #f39c12; 
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+
+        <div class="button-container">
+            <button class="course-button" data-course-id="course1" onclick="showCourse('course1')">Aula 1 & 2</button>
+            <button class="course-button" data-course-id="course2" onclick="showCourse('course2')">Aula 3</button>
+        </div>
+
+        <div id="course1" class="video-block hidden" data-storage-key="acesso_curso1">
+            <h1 id="title1">CURSO 1: SINALIZAÇÃO AULA 01 e 02</h1>
+            
+            <div id="areaTimer1">
+                <p class="alerta-restante" id="tempoRestanteMensagem1">O vídeo será removido...</p>
+                
+                <iframe 
+                    src="https://player.vimeo.com/video/1140876472?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" 
+                    width="100%" 
+                    height="450" 
+                    frameborder="0" 
+                    allow="autoplay; fullscreen; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <div id="mensagemExpiracao1" class="hidden">
+                <p><strong>Tempo esgotado!</strong> O acesso a esta aula expirou.</p>
+            </div>
+        </div>
+
+        <div id="course2" class="video-block hidden" data-storage-key="acesso_curso2">
+            <h1 id="title2">CURSO 2: DIREÇÃO DEFENSIVA - AULA 03</h1>
+            
+            <div id="areaTimer2">
+                <p class="alerta-restante" id="tempoRestanteMensagem2">O vídeo será removido...</p>
+                
+                <iframe 
+                    src="URL_DO_SEGUNDO_VIDEO_VIMEO_AQUI" 
+                    width="100%" 
+                    height="450" 
+                    frameborder="0" 
+                    allow="autoplay; fullscreen; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <div id="mensagemExpiracao2" class="hidden">
+                <p><strong>Tempo esgotado!</strong> O acesso a esta aula expirou.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // === CONFIGURAÇÃO GLOBAL ===
+        const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (AJUSTE AQUI)
+        const TEMPO_LIMITE_MS = TEMPO_LIMITE_SEGUNDOS * 1000;
+        
+        // VARIÁVEL PARA O CONTADOR ATIVO
+        let intervaloContador = null;
+
+        // --- Lógica de Parâmetros ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const isBypass = urlParams.get('bypass') === 'true';
+        const isClear = urlParams.get('clear') === 'true';
+        
+        // --- 1. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO ---
+        function initializeTimer(courseId, storageKey) {
+            // Limpa o contador anterior se houver
+            if (intervaloContador) {
+                clearInterval(intervaloContador);
+            }
+            
+            const areaDoVideo = document.getElementById('areaTimer' + courseId.slice(-1));
+            const mensagemExp = document.getElementById('mensagemExpiracao' + courseId.slice(-1));
+            const mensagemTempoRestante = document.getElementById('tempoRestanteMensagem' + courseId.slice(-1));
+            
+            // --- Bypass ---
+            if (isBypass) {
+                areaDoVideo.classList.remove('hidden');
+                mensagemExp.classList.add('hidden');
+                mensagemTempoRestante.innerHTML = "MODO TESTE ATIVADO (Bypass). O vídeo não expirará.";
+                return; 
+            }
+            
+            let inicioVisualizacao = parseInt(localStorage.getItem(storageKey));
+            const tempoAtual = Date.now();
+
+            if (isNaN(inicioVisualizacao)) {
+                inicioVisualizacao = tempoAtual;
+                localStorage.setItem(storageKey, inicioVisualizacao);
+            }
+
+            const tempoDecorrido = tempoAtual - inicioVisualizacao;
+
+            if (tempoDecorrido >= TEMPO_LIMITE_MS) {
+                // EXPIRADO
+                areaDoVideo.classList.add('hidden');
+                mensagemExp.classList.remove('hidden');
+            } else {
+                // ATIVO
+                areaDoVideo.classList.remove('hidden');
+                mensagemExp.classList.add('hidden');
+
+                // Inicia o contador
+                intervaloContador = setInterval(function() {
+                    const agora = Date.now();
+                    const decorrido = agora - inicioVisualizacao;
+                    const restanteMS = TEMPO_LIMITE_MS - decorrido;
+                    
+                    if (restanteMS <= 0) {
+                        areaDoVideo.classList.add('hidden');
+                        mensagemExp.classList.remove('hidden');
+                        clearInterval(intervaloContador);
+                    } else {
+                        const segundos = Math.ceil(restanteMS / 1000);
+                        mensagemTempoRestante.innerHTML = `Disponível por: **${segundos} segundos** restantes.`; 
+                    }
+                }, 1000);
+            }
+        }
+
+        // --- 2. FUNÇÃO DE NAVEGAÇÃO ENTRE AULAS ---
+        function showCourse(courseId) {
+            const allCourses = document.querySelectorAll('.video-block');
+            const allButtons = document.querySelectorAll('.course-button');
+            const selectedCourse = document.getElementById(courseId);
+            const storageKey = selectedCourse.getAttribute('data-storage-key');
+            
+            // 2.1 Esconde todos os blocos e remove o timer de qualquer um ativo
+            allCourses.forEach(course => course.classList.add('hidden'));
+            if (intervaloContador) { clearInterval(intervaloContador); }
+
+            // 2.2 Mostra o bloco selecionado
+            selectedCourse.classList.remove('hidden');
+
+            // 2.3 Atualiza o estilo do botão
+            allButtons.forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('data-course-id') === courseId) {
+                    button.classList.add('active');
+                }
+            });
+
+            // 2.4 INICIA O TIMER PARA O CURSO SELECIONADO
+            initializeTimer(courseId, storageKey);
+        }
+
+        // --- 3. INICIALIZAÇÃO E LIMPEZA (EXECUTA AO CARREGAR A PÁGINA) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lógica de Limpeza
+            if (isClear) {
+                localStorage.removeItem('acesso_curso1');
+                localStorage.removeItem('acesso_curso2');
+                console.log("LocalStorage de ambos os cursos limpo. Redirecionando...");
+                window.location.href = window.location.origin + window.location.pathname; 
+                return; 
+            }
+
+            // Inicia o primeiro curso por padrão
+            showCourse('course1'); 
+            
+            // Corrige o estado inicial dos botões (o showCourse já deve ter feito isso, mas é uma garantia)
+            document.querySelector('[data-course-id="course1"]').classList.add('active');
+        });
     </script>
 </body>
 </html>
