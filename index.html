@@ -29,146 +29,6 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            margin-bottom: 40px;
-        }
-        h1 {
-            color: #f1c40f;
-            border-bottom: 2px solid #f1c40f;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            font-size: 1.8em;
-        }
-        /* Estilos para o container de botões */
-        .button-container {
-            margin-bottom: 25px;
-            border-bottom: 1px solid #4a6784;
-            padding-bottom: 15px;
-        }
-        /* Estilos do botão */
-        .course-button {
-            padding: 10px 20px;
-            margin: 0 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        /* Estilo para o botão ativo/selecionado */
-        .course-button.active {
-            background-color: #f1c40f; /* Amarelo (destaque) */
-            color: #2c3e50; /* Cor escura */
-        }
-        /* Estilo para o botão inativo */
-        .course-button:not(.active) {
-            background-color: #5d7d9a; /* Cinza-azulado */
-            color: #ecf0f1;
-        }
-        .course-button:not(.active):hover {
-            background-color: #7995b0;
-        }
-        /* Classe CSS para esconder um elemento */
-        .hidden {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <div class="page-container">
-
-        <div class="button-container">
-            <button class="course-button active" onclick="showCourse('course1')">Aula 1</button>
-            <button class="course-button" onclick="showCourse('course2')">Aula 2</button>
-        </div>
-
-        <div id="course1" class="video-block">
-            <h1>AULA 01 - SINALIZAÇÃO</h1>
-            
-            <iframe 
-                src="https://player.vimeo.com/video/1140876472?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" 
-                width="100%" 
-                height="450" 
-                frameborder="0" 
-                allow="autoplay; fullscreen; picture-in-picture" 
-                allowfullscreen>
-            </iframe>
-        </div>
-
-        <div id="course2" class="video-block hidden">
-            <h1>AULA 02 - SINALIZAÇÃO</h1>
-            
-            <iframe 
-                src="https://player.vimeo.com/video/1140903162?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" 
-                width="100%" 
-                height="450" 
-                frameborder="0" 
-                allow="autoplay; fullscreen; picture-in-picture" 
-                allowfullscreen>
-            </iframe>
-        </div>
-
-    </div>
-
-    <script>
-        function showCourse(courseId) {
-            // 1. Esconde todos os blocos de curso
-            document.getElementById('course1').classList.add('hidden');
-            document.getElementById('course2').classList.add('hidden');
-            
-            // 2. Mostra o bloco de curso selecionado
-            document.getElementById(courseId).classList.remove('hidden');
-
-            // 3. Atualiza o estilo dos botões para indicar qual está ativo
-            const buttons = document.querySelectorAll('.course-button');
-            buttons.forEach(button => {
-                // Remove a classe 'active' de todos
-                button.classList.remove('active'); 
-                
-                // Adiciona a classe 'active' ao botão clicado
-                if (button.onclick.toString().includes(courseId)) {
-                    button.classList.add('active');
-                }
-            });
-        }
-        
-        // Garante que o Curso 1 esteja visível na carga inicial (já que o Curso 2 tem a classe 'hidden')
-        showCourse('course1'); 
-    </script>
-</body>
-</html>
-
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CURSOS COM EXPIRAÇÃO E NAVEGAÇÃO</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            padding: 20px;
-            text-align: center;
-        }
-        .page-container {
-            max-width: 800px;
-            width: 100%;
-            margin-bottom: 40px;
-        }
-        .video-block {
-            background-color: #34495e;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         }
         h1 {
             color: #f1c40f;
@@ -222,12 +82,12 @@
     <div class="page-container">
 
         <div class="button-container">
-            <button class="course-button" data-course-id="course1" onclick="showCourse('course1')">Aula 1 & 2</button>
-            <button class="course-button" data-course-id="course2" onclick="showCourse('course2')">Aula 3</button>
+            <button class="course-button" data-course-id="course1" onclick="showCourse('course1')">Aula 1</button>
+            <button class="course-button" data-course-id="course2" onclick="showCourse('course2')">Aula 2</button>
         </div>
 
         <div id="course1" class="video-block hidden" data-storage-key="acesso_curso1">
-            <h1 id="title1">CURSO 1: SINALIZAÇÃO AULA 01 e 02</h1>
+            <h1 id="title1">AULA 01: SINALIZAÇÃO</h1>
             
             <div id="areaTimer1">
                 <p class="alerta-restante" id="tempoRestanteMensagem1">O vídeo será removido...</p>
@@ -247,13 +107,13 @@
         </div>
 
         <div id="course2" class="video-block hidden" data-storage-key="acesso_curso2">
-            <h1 id="title2">CURSO 2: DIREÇÃO DEFENSIVA - AULA 03</h1>
+            <h1 id="title2">AULA 02: SINALIZAÇÃO</h1>
             
             <div id="areaTimer2">
                 <p class="alerta-restante" id="tempoRestanteMensagem2">O vídeo será removido...</p>
                 
                 <iframe 
-                    src="URL_DO_SEGUNDO_VIDEO_VIMEO_AQUI" 
+                    src="https://player.vimeo.com/video/1140903162?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" 
                     width="100%" 
                     height="450" 
                     frameborder="0" 
@@ -270,7 +130,7 @@
 
     <script>
         // === CONFIGURAÇÃO GLOBAL ===
-        const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (AJUSTE AQUI)
+        const TEMPO_LIMITE_SEGUNDOS = 60; // 5 minutos (AJUSTE AQUI)
         const TEMPO_LIMITE_MS = TEMPO_LIMITE_SEGUNDOS * 1000;
         
         // VARIÁVEL PARA O CONTADOR ATIVO
@@ -383,3 +243,4 @@
     </script>
 </body>
 </html>
+
