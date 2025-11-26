@@ -97,6 +97,7 @@
                 style="padding: 10px 20px; background-color: #f1c40f; color: #2c3e50; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px;">
             Registrar Presença
         </button>
+        <p style="font-size: 0.8em; margin-top: 20px; color: #f1c40f;" id="bypassMessage"></p>
     </div>
 
     <div class="page-container content-hidden" id="courseContent">
@@ -159,7 +160,8 @@
 
         // --- Lógica de Parâmetros ---
         const urlParams = new URLSearchParams(window.location.search);
-        const isBypass = urlParams.get('bypass') === 'true';
+        const isBypass = urlParams.get('bypass') === 'true'; // Bypass do Timer do Vídeo
+        const isPresenceBypass = urlParams.get('presencabypass') === 'true'; // NOVO: Bypass da Presença 24h
         const isClear = urlParams.get('clear') === 'true';
         const isPresenceSuccess = urlParams.get('presenca') === 'true'; 
         
@@ -169,15 +171,25 @@
         function checkPresence() {
             const courseContent = document.getElementById('courseContent');
             const instructionMessage = document.getElementById('instructionMessage');
+            const bypassMessage = document.getElementById('bypassMessage');
             
             // Se veio do Formsubmit (após redirecionamento), registra o tempo
             if (isPresenceSuccess) {
                 localStorage.setItem(CHAVE_PRESENCA, Date.now());
-                // Limpa o parâmetro da URL para não registrar o timestamp toda vez que o usuário recarregar
+                // Limpa o parâmetro da URL
                 const cleanUrl = window.location.origin + window.location.pathname;
                 window.history.replaceState(null, null, cleanUrl);
             }
             
+            // --- BYPASS DE PRESENÇA ---
+            if (isPresenceBypass) {
+                courseContent.classList.remove('content-hidden'); 
+                instructionMessage.classList.add('hidden');
+                bypassMessage.innerHTML = "MODO BYPASS DE PRESENÇA ATIVO. Acesso liberado.";
+                return true; 
+            }
+            // -------------------------
+
             // Verifica se 24h se passaram
             const lastTime = parseInt(localStorage.getItem(CHAVE_PRESENCA));
             const currentTime = Date.now();
@@ -185,18 +197,20 @@
             // Se o tempo não está salvo OU se 24 horas se passaram
             if (isNaN(lastTime) || (currentTime - lastTime) >= LIMITE_PRESENCA_MS) {
                 // Presença inválida ou expirada
-                courseContent.classList.add('content-hidden'); // Esconde o curso
-                instructionMessage.classList.remove('hidden'); // Mostra a instrução
+                courseContent.classList.add('content-hidden'); 
+                instructionMessage.classList.remove('hidden'); 
+                bypassMessage.innerHTML = ""; // Limpa mensagem de bypass
                 return false; // Presença Inválida
             } else {
                 // Presença válida
-                courseContent.classList.remove('content-hidden'); // Mostra o curso
-                instructionMessage.classList.add('hidden'); // Esconde a instrução
+                courseContent.classList.remove('content-hidden'); 
+                instructionMessage.classList.add('hidden'); 
+                bypassMessage.innerHTML = ""; // Limpa mensagem de bypass
                 return true; // Presença Válida
             }
         }
         
-        // --- 2. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO DO VÍDEO ---
+        // --- 2. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO DO VÍDEO (BYPASS DE VÍDEO INCLUÍDO) ---
         function initializeTimer(courseId, storageKey) {
             if (intervaloContador) {
                 clearInterval(intervaloContador);
@@ -209,7 +223,7 @@
             if (isBypass) {
                 areaDoVideo.classList.remove('hidden');
                 mensagemExp.classList.add('hidden');
-                mensagemTempoRestante.innerHTML = "MODO TESTE ATIVADO (Bypass). O vídeo não expirará.";
+                mensagemTempoRestante.innerHTML = "MODO TESTE ATIVADO (Bypass de Vídeo). O vídeo não expirará.";
                 return; 
             }
             
@@ -289,7 +303,7 @@
                 return; 
             }
 
-            // 1. Verifica se a presença é válida e esconde/mostra o conteúdo
+            // 1. Verifica se a presença é válida (incluindo o bypass)
             const isAccessValid = checkPresence();
 
             // 2. Inicia o primeiro curso APENAS se o acesso for válido
