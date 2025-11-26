@@ -6,7 +6,6 @@
     <title>AUTO ESCOLA GUARDA DOS FERREIROS - CURSINHO</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
-        /* CSS INALTERADO DO SEU CÓDIGO */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -20,34 +19,69 @@
             padding: 20px;
             text-align: center;
         }
-        /* O container principal pode ser mais largo, ou você pode ter um container para cada vídeo */
         .page-container {
-            max-width: 800px; /* Largura máxima da página */
+            max-width: 800px;
             width: 100%;
             margin-bottom: 40px;
         }
-        /* Estilo para cada bloco de vídeo */
         .video-block {
             background-color: #34495e;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            margin-bottom: 40px; /* Espaço entre os cursos */
+            margin-bottom: 40px;
         }
         h1 {
             color: #f1c40f;
             border-bottom: 2px solid #f1c40f;
             padding-bottom: 10px;
             margin-bottom: 20px;
-            font-size: 1.8em; /* Ajustei o tamanho para caber dois títulos */
+            font-size: 1.8em;
         }
-        /* Removidas classes de timer e alerta */
+        /* Estilos para o container de botões */
+        .button-container {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #4a6784;
+            padding-bottom: 15px;
+        }
+        /* Estilos do botão */
+        .course-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* Estilo para o botão ativo/selecionado */
+        .course-button.active {
+            background-color: #f1c40f; /* Amarelo (destaque) */
+            color: #2c3e50; /* Cor escura */
+        }
+        /* Estilo para o botão inativo */
+        .course-button:not(.active) {
+            background-color: #5d7d9a; /* Cinza-azulado */
+            color: #ecf0f1;
+        }
+        .course-button:not(.active):hover {
+            background-color: #7995b0;
+        }
+        /* Classe CSS para esconder um elemento */
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="page-container">
 
-        <div class="video-block">
+        <div class="button-container">
+            <button class="course-button active" onclick="showCourse('course1')">Aula 1 & 2</button>
+            <button class="course-button" onclick="showCourse('course2')">Aula 3</button>
+        </div>
+
+        <div id="course1" class="video-block">
             <h1>AULA 01 - SINALIZAÇÃO</h1>
             
             <iframe 
@@ -60,7 +94,7 @@
             </iframe>
         </div>
 
-        <div class="video-block">
+        <div id="course2" class="video-block hidden">
             <h1>AULA 02 - SINALIZAÇÃO</h1>
             
             <iframe 
@@ -73,7 +107,32 @@
             </iframe>
         </div>
 
-        </div>
+    </div>
+
+    <script>
+        function showCourse(courseId) {
+            // 1. Esconde todos os blocos de curso
+            document.getElementById('course1').classList.add('hidden');
+            document.getElementById('course2').classList.add('hidden');
+            
+            // 2. Mostra o bloco de curso selecionado
+            document.getElementById(courseId).classList.remove('hidden');
+
+            // 3. Atualiza o estilo dos botões para indicar qual está ativo
+            const buttons = document.querySelectorAll('.course-button');
+            buttons.forEach(button => {
+                // Remove a classe 'active' de todos
+                button.classList.remove('active'); 
+                
+                // Adiciona a classe 'active' ao botão clicado
+                if (button.onclick.toString().includes(courseId)) {
+                    button.classList.add('active');
+                }
+            });
+        }
+        
+        // Garante que o Curso 1 esteja visível na carga inicial (já que o Curso 2 tem a classe 'hidden')
+        showCourse('course1'); 
+    </script>
 </body>
 </html>
-
