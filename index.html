@@ -151,9 +151,9 @@
 
     <script>
         // === CONFIGURAÇÃO GLOBAL ===
-        const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (Ajuste para o timer dos vídeos)
+        const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (Limite de visualização por vídeo)
         const TEMPO_LIMITE_MS = TEMPO_LIMITE_SEGUNDOS * 1000;
-        const LIMITE_PRESENCA_MS = 24 * 60 * 60 * 1000; // 24 horas em milissegundos
+        const LIMITE_PRESENCA_MS = 24 * 60 * 60 * 1000; // 24h para o registro de presença (diário)
         const CHAVE_PRESENCA = 'lastPresenceTime'; 
         
         let intervaloContador = null;
@@ -161,56 +161,53 @@
         // --- Lógica de Parâmetros ---
         const urlParams = new URLSearchParams(window.location.search);
         const isBypass = urlParams.get('bypass') === 'true'; // Bypass do Timer do Vídeo
-        const isPresenceBypass = urlParams.get('presencabypass') === 'true'; // NOVO: Bypass da Presença 24h
+        const isPresenceBypass = urlParams.get('presencabypass') === 'true'; // Bypass da Presença 24h
         const isClear = urlParams.get('clear') === 'true';
         const isPresenceSuccess = urlParams.get('presenca') === 'true'; 
         
         const pad = (num) => String(num).padStart(2, '0');
 
         // --- 1. FUNÇÃO DE CONTROLE DE PRESENÇA (MOSTRA/ESCONDE CONTEÚDO) ---
+        // Esta função é o principal gatekeeper (porteiro) que bloqueia ou libera TUDO por 24h
         function checkPresence() {
             const courseContent = document.getElementById('courseContent');
             const instructionMessage = document.getElementById('instructionMessage');
             const bypassMessage = document.getElementById('bypassMessage');
             
-            // Se veio do Formsubmit (após redirecionamento), registra o tempo
+            // Se veio do Formsubmit, registra o tempo
             if (isPresenceSuccess) {
                 localStorage.setItem(CHAVE_PRESENCA, Date.now());
-                // Limpa o parâmetro da URL
                 const cleanUrl = window.location.origin + window.location.pathname;
                 window.history.replaceState(null, null, cleanUrl);
             }
             
-            // --- BYPASS DE PRESENÇA ---
+            // Bypass de Presença para testes
             if (isPresenceBypass) {
                 courseContent.classList.remove('content-hidden'); 
                 instructionMessage.classList.add('hidden');
                 bypassMessage.innerHTML = "MODO BYPASS DE PRESENÇA ATIVO. Acesso liberado.";
                 return true; 
             }
-            // -------------------------
 
-            // Verifica se 24h se passaram
             const lastTime = parseInt(localStorage.getItem(CHAVE_PRESENCA));
             const currentTime = Date.now();
             
-            // Se o tempo não está salvo OU se 24 horas se passaram
+            // SE a presença não foi registrada OU SE 24 horas se passaram (BLOQUEIO)
             if (isNaN(lastTime) || (currentTime - lastTime) >= LIMITE_PRESENCA_MS) {
-                // Presença inválida ou expirada
                 courseContent.classList.add('content-hidden'); 
                 instructionMessage.classList.remove('hidden'); 
-                bypassMessage.innerHTML = ""; // Limpa mensagem de bypass
-                return false; // Presença Inválida
+                bypassMessage.innerHTML = "";
+                return false; 
             } else {
-                // Presença válida
+                // SE o registro é válido (LIBERAÇÃO)
                 courseContent.classList.remove('content-hidden'); 
                 instructionMessage.classList.add('hidden'); 
-                bypassMessage.innerHTML = ""; // Limpa mensagem de bypass
-                return true; // Presença Válida
+                bypassMessage.innerHTML = "";
+                return true; 
             }
         }
         
-        // --- 2. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO DO VÍDEO (BYPASS DE VÍDEO INCLUÍDO) ---
+        // --- 2. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO DO VÍDEO (5 MINUTOS) ---
         function initializeTimer(courseId, storageKey) {
             if (intervaloContador) {
                 clearInterval(intervaloContador);
@@ -268,7 +265,8 @@
             }
         }
 
-        // --- 3. FUNÇÃO DE NAVEGAÇÃO ENTRE AULAS ---
+        // --- 3. FUNÇÃO DE NAVEGAÇÃO ENTRE AULAS (SEM BLOQUEIO SEQUENCIAL) ---
+        // Agora, se o acesso geral (checkPresence) for válido, o usuário pode alternar livremente entre as aulas.
         function showCourse(courseId) {
             const allCourses = document.querySelectorAll('.video-block');
             const allButtons = document.querySelectorAll('.course-button');
