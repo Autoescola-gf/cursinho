@@ -263,50 +263,6 @@
             }
         }
 
-        // --- 3. FUNÇÃO DE NAVEGAÇÃO ENTRE AULAS (AGORA COM CHECAGEM DE 24H SEQUENCIAL) ---
-        function showCourse(courseId) {
-            const allCourses = document.querySelectorAll('.video-block');
-            const allButtons = document.querySelectorAll('.course-button');
-            const selectedCourse = document.getElementById(courseId);
-            const storageKey = selectedCourse.getAttribute('data-storage-key');
-            const courseNumber = parseInt(courseId.slice(-1));
-            
-            // ----------------------------------------------------
-            // LÓGICA DE LIBERAÇÃO SEQUENCIAL (24H DE ATRASO)
-            // ----------------------------------------------------
-            
-            if (courseNumber > 1) {
-                const previousCourseNumber = courseNumber - 1;
-                const previousStorageKey = `acesso_curso${previousCourseNumber}`;
-                const previousCourseStartTime = parseInt(localStorage.getItem(previousStorageKey));
-
-                // 1. Checa se o curso anterior foi iniciado
-                if (isNaN(previousCourseStartTime)) {
-                    alert(`Você precisa iniciar a Aula ${previousCourseNumber} primeiro para liberar a Aula ${courseNumber}.`);
-                    return;
-                }
-
-                // 2. Calcula o tempo de liberação e checa se já passou
-                const unlockTime = previousCourseStartTime + LOCK_DELAY_COURSES_MS;
-                const currentTime = Date.now();
-
-                if (currentTime < unlockTime) {
-                    const timeRemaining = unlockTime - currentTime;
-                    let totalSeconds = Math.floor(timeRemaining / 1000);
-                    
-                    const hours = Math.floor(totalSeconds / 3600);
-                    totalSeconds %= 3600;
-                    const minutes = Math.floor(totalSeconds / 60);
-                    const seconds = totalSeconds % 60;
-                    
-                    const timeFormat = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-
-                    alert(`A Aula ${courseNumber} só será liberada 24 horas após o início da Aula ${previousCourseNumber}.\nTempo restante: ${timeFormat}`);
-                    
-                    return; // Bloqueia o acesso se 24h não passaram
-                }
-            }
-
             // ----------------------------------------------------
             // LÓGICA NORMAL DE EXIBIÇÃO
             // ----------------------------------------------------
@@ -349,3 +305,4 @@
     </script>
 </body>
 </html>
+
