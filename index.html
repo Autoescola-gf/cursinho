@@ -69,35 +69,34 @@
         </div>
     </div>
 
-  <script>
+ <script>
         // === CONFIGURAÇÃO ===
         const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (300 segundos)
         // ====================
 
         const TEMPO_LIMITE_MS = TEMPO_LIMITE_SEGUNDOS * 1000;
-        const CHAVE_STORAGE = 'videoAcessoInicio';
+        const CHAVE_STORAGE = 'videoAcessoInicio1';
 
         const areaDoVideo = document.getElementById('videoArea');
         const mensagemExp = document.getElementById('mensagemExpiracao');
         const mensagemTempoRestante = document.getElementById('tempoRestanteMensagem');
-
-        // --- CORREÇÃO E LÓGICA DE BYPASS/LIMPEZA ---
-        // 1. Definição Correta da variável urlParams
-        const urlParams = new URLSearchParams(window.location.search);
         
-        // 2. Lógica de Limpeza de LocalStorage (Parâmetro ?clear=true)
+        // --- 1. INICIALIZAÇÃO E LÓGICA DE PARÂMETROS ---
+        // Garante que o objeto URLSearchParams seja criado corretamente.
+        const urlParams = new URLSearchParams(window.location.search);
+        const isBypass = urlParams.get('bypass') === 'true';
         const isClear = urlParams.get('clear') === 'true';
+        
+        // --- 2. LÓGICA DE LIMPEZA (DEVE SER A PRIMEIRA VERIFICAÇÃO) ---
         if (isClear) {
             localStorage.removeItem(CHAVE_STORAGE); 
             console.log("LocalStorage limpo. Simulação de primeiro acesso na próxima visita.");
-            
-            // Redireciona para a URL limpa para iniciar o teste do zero
+            // Redireciona para remover o ?clear=true da URL
             window.location.href = window.location.origin + window.location.pathname; 
             return; 
         }
 
-        // 3. Lógica de Bypass (Parâmetro ?bypass=true)
-        const isBypass = urlParams.get('bypass') === 'true';
+        // --- 3. LÓGICA DE BYPASS (TESTE) ---
         if (isBypass) {
             areaDoVideo.style.display = 'block';
             mensagemExp.style.display = 'none';
@@ -111,7 +110,7 @@
         let inicioVisualizacao;
         let tempoAtual = Date.now();
 
-        // 1. Verifica se o usuário já acessou (se a chave existe no armazenamento local)
+        // 4. Determina o Tempo de Início (Primeiro Acesso)
         if (localStorage.getItem(CHAVE_STORAGE)) {
             inicioVisualizacao = parseInt(localStorage.getItem(CHAVE_STORAGE));
         } else {
@@ -119,10 +118,10 @@
             localStorage.setItem(CHAVE_STORAGE, inicioVisualizacao);
         }
 
-        // 2. Verifica a expiração
+        // 5. Verifica a Expiração
         const tempoDecorrido = tempoAtual - inicioVisualizacao;
 
-        if (tempoDecorrido >= TEMPO_LIMITE_MS) {
+        if (tempoDecorrido >= TEMPO_LIMIT_MS) {
             // O tempo expirou: esconde o vídeo e mostra a mensagem de expiração
             areaDoVideo.style.display = 'none';
             mensagemExp.style.display = 'block';
@@ -132,7 +131,7 @@
             areaDoVideo.style.display = 'block';
             mensagemExp.style.display = 'none';
 
-            // 3. Função para atualizar o contador restante
+            // 6. Função para atualizar o contador restante
             function atualizarContador() {
                 const agora = Date.now();
                 const decorrido = agora - inicioVisualizacao;
@@ -155,6 +154,7 @@
     </script>
 </body>
 </html>
+
 
 
 
