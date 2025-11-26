@@ -50,24 +50,6 @@
 <body>
     <div class="video-container">
         <h1>CONTEUDO: SINALIZAÇÃO AULA 01 e 02</h1>
-
-        <div id="videoArea">
-            <p class="alerta-restante" id="tempoRestanteMensagem">O vídeo será removido...</p>
-            
-            <iframe 
-                src="https://player.vimeo.com/video/1140876472?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" 
-                width="100%" 
-                height="450" 
-                frameborder="0" 
-                allow="autoplay; fullscreen; picture-in-picture" 
-                allowfullscreen>
-            </iframe>
-        </div>
-        
-        <div id="mensagemExpiracao">
-            <p><strong>Tempo esgotado!</strong> O acesso a este conteúdo exclusivo expirou.</p>
-        </div>
-    </div>
 <script>
         // === CONFIGURAÇÃO ===
         const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (300 segundos)
@@ -145,8 +127,27 @@
             atualizarContador(); 
         }
     </script>
+        
+        <div id="videoArea">
+            <p class="alerta-restante" id="tempoRestanteMensagem">O vídeo será removido...</p>
+            
+            <iframe 
+                src="https://player.vimeo.com/video/1140876472?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" 
+                width="100%" 
+                height="450" 
+                frameborder="0" 
+                allow="autoplay; fullscreen; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
+        </div>
+        
+        <div id="mensagemExpiracao">
+            <p><strong>Tempo esgotado!</strong> O acesso a este conteúdo exclusivo expirou.</p>
+        </div>
+    </div>
 </body>
 </html>
+
 
 
 
