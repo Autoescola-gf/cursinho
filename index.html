@@ -45,3 +45,95 @@
 </html>
 
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUTO ESCOLA GUARDA DOS FERREIROS - CURSINHO</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        /* (Seu CSS existente, ajustado para a nova mensagem) */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+        }
+        .video-container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #34495e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        /* Estilo para esconder a mensagem de expiração inicialmente */
+        #mensagemExpiracao {
+            display: none; 
+            color: #e74c3c; /* Vermelho de aviso */
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <h1>Assista Rápido!</h1>
+        <p>O vídeo será removido em instantes.</p>
+
+        <div id="videoArea">
+            <iframe 
+                src="https://player.vimeo.com/video/1140876472?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" 
+                width="100%" 
+                height="450" 
+                frameborder="0" 
+                allow="autoplay; fullscreen; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
+        </div>
+        
+        <div id="mensagemExpiracao">
+            <p><strong>Tempo esgotado!</strong> Este conteúdo expirou e foi removido.</p>
+        </div>
+    </div>
+
+    <script>
+        // 1. Defina o tempo de expiração (em milissegundos)
+        // Exemplo: 10 segundos = 10000 milissegundos
+        const tempoExpiracao = 60000; 
+
+        // 2. Encontra os elementos pelo ID
+        const areaDoVideo = document.getElementById('videoArea');
+        const mensagemExp = document.getElementById('mensagemExpiracao');
+
+        // 3. Define a função que será chamada para expirar o vídeo
+        function expirarVideo() {
+            // Esconde a área do vídeo
+            areaDoVideo.style.display = 'none';
+
+            // Mostra a mensagem de expiração
+            mensagemExp.style.display = 'block';
+
+            // Opcional: Para ainda mais segurança (se o vídeo estiver no Vimeo), você pode remover o iframe completamente
+            // areaDoVideo.innerHTML = ''; 
+            
+            console.log('O vídeo expirou e foi removido.');
+        }
+
+        // 4. Inicia o temporizador (setTimeout)
+        // Chama a função 'expirarVideo' após o tempo definido
+        setTimeout(expirarVideo, tempoExpiracao);
+        
+    </script>
+</body>
+</html>
+
+
