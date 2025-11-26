@@ -79,7 +79,7 @@
             display: none;
         }
         .content-hidden {
-            display: none; /* Usado para esconder toda a área de cursos se a presença for inválida */
+            display: none;
         }
         #instructionMessage {
             margin-top: 50px;
@@ -105,7 +105,7 @@
         <div class="button-container">
             <button class="course-button" data-course-id="course1" onclick="showCourse('course1')">Aula 1</button>
             <button class="course-button" data-course-id="course2" onclick="showCourse('course2')">Aula 2</button>
-        </div>
+            </div>
 
         <div id="course1" class="video-block hidden" data-storage-key="acesso_curso1">
             <h1 id="title1">AULA 01: SINALIZAÇÃO</h1>
@@ -151,37 +151,35 @@
 
     <script>
         // === CONFIGURAÇÃO GLOBAL ===
-        const TEMPO_LIMITE_SEGUNDOS = 24 * 60 * 60 * 1000; // 5 minutos (Limite de visualização por vídeo)
-        const TEMPO_LIMITE_MS = TEMPO_LIMITE_SEGUNDOS;
+        const TEMPO_LIMITE_SEGUNDOS = 24 * 60 * 60 * 1000; // 5 minutos (Ajuste para o timer dos vídeos)
+        const TEMPO_LIMITE_MS = 24 * 60 * 60 * 1000;
         const LIMITE_PRESENCA_MS = 24 * 60 * 60 * 1000; // 24h para o registro de presença (diário)
+        const LOCK_DELAY_COURSES_MS = 24 * 60 * 60 * 1000; // NOVO: 24h de atraso entre cursos
         const CHAVE_PRESENCA = 'lastPresenceTime'; 
         
         let intervaloContador = null;
 
         // --- Lógica de Parâmetros ---
         const urlParams = new URLSearchParams(window.location.search);
-        const isBypass = urlParams.get('bypass') === 'true'; // Bypass do Timer do Vídeo
-        const isPresenceBypass = urlParams.get('presencabypass') === 'true'; // Bypass da Presença 24h
+        const isBypass = urlParams.get('bypass') === 'true'; 
+        const isPresenceBypass = urlParams.get('presencabypass') === 'true'; 
         const isClear = urlParams.get('clear') === 'true';
         const isPresenceSuccess = urlParams.get('presenca') === 'true'; 
         
         const pad = (num) => String(num).padStart(2, '0');
 
         // --- 1. FUNÇÃO DE CONTROLE DE PRESENÇA (MOSTRA/ESCONDE CONTEÚDO) ---
-        // Esta função é o principal gatekeeper (porteiro) que bloqueia ou libera TUDO por 24h
         function checkPresence() {
             const courseContent = document.getElementById('courseContent');
             const instructionMessage = document.getElementById('instructionMessage');
             const bypassMessage = document.getElementById('bypassMessage');
             
-            // Se veio do Formsubmit, registra o tempo
             if (isPresenceSuccess) {
                 localStorage.setItem(CHAVE_PRESENCA, Date.now());
                 const cleanUrl = window.location.origin + window.location.pathname;
                 window.history.replaceState(null, null, cleanUrl);
             }
             
-            // Bypass de Presença para testes
             if (isPresenceBypass) {
                 courseContent.classList.remove('content-hidden'); 
                 instructionMessage.classList.add('hidden');
@@ -192,14 +190,12 @@
             const lastTime = parseInt(localStorage.getItem(CHAVE_PRESENCA));
             const currentTime = Date.now();
             
-            // SE a presença não foi registrada OU SE 24 horas se passaram (BLOQUEIO)
             if (isNaN(lastTime) || (currentTime - lastTime) >= LIMITE_PRESENCA_MS) {
                 courseContent.classList.add('content-hidden'); 
                 instructionMessage.classList.remove('hidden'); 
                 bypassMessage.innerHTML = "";
                 return false; 
             } else {
-                // SE o registro é válido (LIBERAÇÃO)
                 courseContent.classList.remove('content-hidden'); 
                 instructionMessage.classList.add('hidden'); 
                 bypassMessage.innerHTML = "";
@@ -207,8 +203,9 @@
             }
         }
         
-        // --- 2. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO DO VÍDEO (5 MINUTOS) ---
+        // --- 2. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO DO VÍDEO ---
         function initializeTimer(courseId, storageKey) {
+            // ... (Lógica do timer de 5 minutos permanece a mesma) ...
             if (intervaloContador) {
                 clearInterval(intervaloContador);
             }
@@ -228,6 +225,7 @@
             const tempoAtual = Date.now();
 
             if (isNaN(inicioVisualizacao)) {
+                // ESTE É O MOMENTO EM QUE O CURSO FOI VISTO PELA PRIMEIRA VEZ
                 inicioVisualizacao = tempoAtual;
                 localStorage.setItem(storageKey, inicioVisualizacao);
             }
@@ -265,14 +263,54 @@
             }
         }
 
-        // --- 3. FUNÇÃO DE NAVEGAÇÃO ENTRE AULAS (SEM BLOQUEIO SEQUENCIAL) ---
-        // Agora, se o acesso geral (checkPresence) for válido, o usuário pode alternar livremente entre as aulas.
+        // --- 3. FUNÇÃO DE NAVEGAÇÃO ENTRE AULAS (AGORA COM CHECAGEM DE 24H SEQUENCIAL) ---
         function showCourse(courseId) {
             const allCourses = document.querySelectorAll('.video-block');
             const allButtons = document.querySelectorAll('.course-button');
             const selectedCourse = document.getElementById(courseId);
             const storageKey = selectedCourse.getAttribute('data-storage-key');
+            const courseNumber = parseInt(courseId.slice(-1));
             
+            // ----------------------------------------------------
+            // LÓGICA DE LIBERAÇÃO SEQUENCIAL (24H DE ATRASO)
+            // ----------------------------------------------------
+            
+            if (courseNumber > 1) {
+                const previousCourseNumber = courseNumber - 1;
+                const previousStorageKey = `acesso_curso${previousCourseNumber}`;
+                const previousCourseStartTime = parseInt(localStorage.getItem(previousStorageKey));
+
+                // 1. Checa se o curso anterior foi iniciado
+                if (isNaN(previousCourseStartTime)) {
+                    alert(`Você precisa iniciar a Aula ${previousCourseNumber} primeiro para liberar a Aula ${courseNumber}.`);
+                    return;
+                }
+
+                // 2. Calcula o tempo de liberação e checa se já passou
+                const unlockTime = previousCourseStartTime + LOCK_DELAY_COURSES_MS;
+                const currentTime = Date.now();
+
+                if (currentTime < unlockTime) {
+                    const timeRemaining = unlockTime - currentTime;
+                    let totalSeconds = Math.floor(timeRemaining / 1000);
+                    
+                    const hours = Math.floor(totalSeconds / 3600);
+                    totalSeconds %= 3600;
+                    const minutes = Math.floor(totalSeconds / 60);
+                    const seconds = totalSeconds % 60;
+                    
+                    const timeFormat = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+
+                    alert(`A Aula ${courseNumber} só será liberada 24 horas após o início da Aula ${previousCourseNumber}.\nTempo restante: ${timeFormat}`);
+                    
+                    return; // Bloqueia o acesso se 24h não passaram
+                }
+            }
+
+            // ----------------------------------------------------
+            // LÓGICA NORMAL DE EXIBIÇÃO
+            // ----------------------------------------------------
+
             allCourses.forEach(course => course.classList.add('hidden'));
             if (intervaloContador) { clearInterval(intervaloContador); }
 
@@ -294,6 +332,7 @@
             if (isClear) {
                 localStorage.removeItem('acesso_curso1');
                 localStorage.removeItem('acesso_curso2');
+                // Adicione mais remoções aqui se tiver mais cursos (ex: 'acesso_curso3')
                 localStorage.removeItem(CHAVE_PRESENCA); 
                 
                 console.log("LocalStorage de vídeos e presença limpo. Redirecionando...");
@@ -301,10 +340,8 @@
                 return; 
             }
 
-            // 1. Verifica se a presença é válida (incluindo o bypass)
             const isAccessValid = checkPresence();
 
-            // 2. Inicia o primeiro curso APENAS se o acesso for válido
             if (isAccessValid) {
                 showCourse('course1'); 
             }
@@ -312,4 +349,3 @@
     </script>
 </body>
 </html>
-
