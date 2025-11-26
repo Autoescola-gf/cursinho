@@ -151,8 +151,8 @@
 
     <script>
         // === CONFIGURAÇÃO GLOBAL ===
-        const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (Limite de visualização por vídeo)
-        const TEMPO_LIMITE_MS = TEMPO_LIMITE_SEGUNDOS * 1000;
+        const TEMPO_LIMITE_SEGUNDOS = 24 * 60 * 60 * 1000; // 5 minutos (Limite de visualização por vídeo)
+        const TEMPO_LIMITE_MS = TEMPO_LIMITE_SEGUNDOS;
         const LIMITE_PRESENCA_MS = 24 * 60 * 60 * 1000; // 24h para o registro de presença (diário)
         const CHAVE_PRESENCA = 'lastPresenceTime'; 
         
@@ -312,3 +312,4 @@
     </script>
 </body>
 </html>
+
