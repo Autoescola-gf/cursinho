@@ -79,7 +79,7 @@
             display: none;
         }
         .content-hidden {
-            display: none;
+            display: none; 
         }
         #instructionMessage {
             margin-top: 50px;
@@ -105,7 +105,7 @@
         <div class="button-container">
             <button class="course-button" data-course-id="course1" onclick="showCourse('course1')">Aula 1</button>
             <button class="course-button" data-course-id="course2" onclick="showCourse('course2')">Aula 2</button>
-            </div>
+        </div>
 
         <div id="course1" class="video-block hidden" data-storage-key="acesso_curso1">
             <h1 id="title1">AULA 01: SINALIZAÇÃO</h1>
@@ -151,10 +151,9 @@
 
     <script>
         // === CONFIGURAÇÃO GLOBAL ===
-        const TEMPO_LIMITE_SEGUNDOS = 24 * 60 * 60 * 1000; // 5 minutos (Ajuste para o timer dos vídeos)
+        const TEMPO_LIMITE_SEGUNDOS = 24 * 60 * 60 * 1000; // CORRIGIDO: 5 minutos para o timer do vídeo
         const TEMPO_LIMITE_MS = 24 * 60 * 60 * 1000;
         const LIMITE_PRESENCA_MS = 24 * 60 * 60 * 1000; // 24h para o registro de presença (diário)
-        const LOCK_DELAY_COURSES_MS = 24 * 60 * 60 * 1000; // NOVO: 24h de atraso entre cursos
         const CHAVE_PRESENCA = 'lastPresenceTime'; 
         
         let intervaloContador = null;
@@ -205,7 +204,6 @@
         
         // --- 2. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO DO VÍDEO ---
         function initializeTimer(courseId, storageKey) {
-            // ... (Lógica do timer de 5 minutos permanece a mesma) ...
             if (intervaloContador) {
                 clearInterval(intervaloContador);
             }
@@ -225,7 +223,6 @@
             const tempoAtual = Date.now();
 
             if (isNaN(inicioVisualizacao)) {
-                // ESTE É O MOMENTO EM QUE O CURSO FOI VISTO PELA PRIMEIRA VEZ
                 inicioVisualizacao = tempoAtual;
                 localStorage.setItem(storageKey, inicioVisualizacao);
             }
@@ -263,15 +260,20 @@
             }
         }
 
-            // ----------------------------------------------------
-            // LÓGICA NORMAL DE EXIBIÇÃO
-            // ----------------------------------------------------
-
+        // --- 3. FUNÇÃO DE NAVEGAÇÃO ENTRE AULAS (LIBERADO) ---
+        function showCourse(courseId) {
+            const allCourses = document.querySelectorAll('.video-block');
+            const allButtons = document.querySelectorAll('.course-button');
+            const selectedCourse = document.getElementById(courseId);
+            const storageKey = selectedCourse.getAttribute('data-storage-key');
+            
+            // LIMPEZA E EXIBIÇÃO
             allCourses.forEach(course => course.classList.add('hidden'));
             if (intervaloContador) { clearInterval(intervaloContador); }
 
             selectedCourse.classList.remove('hidden');
 
+            // ATIVAÇÃO DO BOTÃO
             allButtons.forEach(button => {
                 button.classList.remove('active');
                 if (button.getAttribute('data-course-id') === courseId) {
@@ -279,16 +281,15 @@
                 }
             });
 
+            // INICIALIZAÇÃO DO TIMER DE 5 MINUTOS (ou o que estiver configurado em TEMPO_LIMITE_SEGUNDOS)
             initializeTimer(courseId, storageKey);
         }
 
         // --- 4. INICIALIZAÇÃO DA PÁGINA ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Lógica de Limpeza Geral (Timer de Vídeo e Presença)
             if (isClear) {
                 localStorage.removeItem('acesso_curso1');
                 localStorage.removeItem('acesso_curso2');
-                // Adicione mais remoções aqui se tiver mais cursos (ex: 'acesso_curso3')
                 localStorage.removeItem(CHAVE_PRESENCA); 
                 
                 console.log("LocalStorage de vídeos e presença limpo. Redirecionando...");
@@ -305,4 +306,3 @@
     </script>
 </body>
 </html>
-
