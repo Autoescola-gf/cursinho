@@ -191,33 +191,42 @@
         
         const pad = (num) => String(num).padStart(2, '0');
 
-        // --- NOVO: FUNÇÃO DE CONTROLE DE PRESENÇA ---
-        function checkPresence() {
-            const presenceArea = document.getElementById('presenceArea');
-            
-            // 1. Se veio do Formsubmit, registra o tempo
-            if (isPresenceSuccess) {
-                localStorage.setItem(CHAVE_PRESENCA, Date.now());
-                
-                // Remove o parâmetro ?presenca=true da URL para não registrar toda vez que recarregar
-                const cleanUrl = window.location.origin + window.location.pathname;
-                window.history.replaceState(null, null, cleanUrl);
-                
-                // Mostra mensagem de sucesso (opcional, pode ser melhor colocar no HTML)
-                console.log("Presença registrada. Formulário escondido por 24h.");
-            }
-            
-            // 2. Verifica se 24h se passaram
-            const lastTime = parseInt(localStorage.getItem(CHAVE_PRESENCA));
-            const currentTime = Date.now();
-            
-            // Se o tempo não está salvo OU se 24 horas se passaram
-            if (isNaN(lastTime) || (currentTime - lastTime) >= LIMITE_PRESENCA_MS) {
-                presenceArea.classList.remove('hidden'); // Mostra o formulário
-            } else {
-                presenceArea.classList.add('hidden'); // Esconde o formulário
-            }
-        }
+       // --- FUNÇÃO DE CONTROLE DE PRESENÇA (MODIFICADA) ---
+function checkPresence() {
+    const courseContent = document.getElementById('courseContent');
+    const instructionMessage = document.getElementById('instructionMessage');
+    
+    const lastTime = parseInt(localStorage.getItem(CHAVE_PRESENCA));
+    const currentTime = Date.now();
+    
+    // Se o tempo não está salvo OU se 24 horas se passaram
+    if (isNaN(lastTime) || (currentTime - lastTime) >= LIMITE_PRESENCA_MS) {
+        // Presença inválida ou expirada
+        courseContent.classList.add('content-hidden'); // Esconde o curso
+        instructionMessage.style.display = 'block'; // Mostra a instrução e o botão
+    } else {
+        // Presença válida
+        courseContent.classList.remove('content-hidden'); // Mostra o curso
+        instructionMessage.style.display = 'none'; // Esconde a instrução
+    }
+}
+
+// --- 3. INICIALIZAÇÃO E LIMPEZA (EXECUTA AO CARREGAR A PÁGINA) ---
+document.addEventListener('DOMContentLoaded', function() {
+    // ... (Sua lógica de Limpeza) ...
+    if (isClear) {
+        // ... (Lógica de limpeza) ...
+        return; 
+    }
+
+    // 1. Verifica Acesso (Presença)
+    checkPresence();
+
+    // 2. Inicia o primeiro curso, APENAS se estiver visível
+    if (!document.getElementById('courseContent').classList.contains('content-hidden')) {
+        showCourse('course1'); 
+    }
+});
         
         // --- FUNÇÃO PRINCIPAL DE EXPIRAÇÃO (Não alterada) ---
         function initializeTimer(courseId, storageKey) {
@@ -323,3 +332,4 @@
     </script>
 </body>
 </html>
+
