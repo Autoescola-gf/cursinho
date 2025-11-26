@@ -97,9 +97,20 @@
             // Paramos o script aqui para evitar a lógica de expiração
             // Retorna a função para não executar o resto do código
             return; 
+            
         }
         // --- Fim da Lógica de Bypass ---
+        // --- NOVO: Lógica de Limpeza de LocalStorage ---
+        const isClear = urlParams.get('clear') === 'true';
 
+        if (isClear) {
+        localStorage.removeItem(CHAVE_STORAGE); 
+        console.log("LocalStorage limpo. Simulação de primeiro acesso na próxima visita.");
+    
+        // Redireciona para a URL limpa para iniciar o teste do zero
+        window.location.href = window.location.origin + window.location.pathname; 
+        return; // Para o script
+        }
 
         let inicioVisualizacao;
         let tempoAtual = Date.now();
@@ -147,6 +158,7 @@
     </script>
 </body>
 </html>
+
 
 
 
