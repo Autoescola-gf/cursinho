@@ -69,7 +69,7 @@
         </div>
     </div>
 
-   <script>
+  <script>
         // === CONFIGURAÇÃO ===
         const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (300 segundos)
         // ====================
@@ -80,18 +80,33 @@
         const areaDoVideo = document.getElementById('videoArea');
         const mensagemExp = document.getElementById('mensagemExpiracao');
         const mensagemTempoRestante = document.getElementById('tempoRestanteMensagem');
-    
-        // --- NOVO: Lógica de Limpeza de LocalStorage ---
-        const isClear = urlParams.get('clear') === 'true';
 
+        // --- CORREÇÃO E LÓGICA DE BYPASS/LIMPEZA ---
+        // 1. Definição Correta da variável urlParams
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // 2. Lógica de Limpeza de LocalStorage (Parâmetro ?clear=true)
+        const isClear = urlParams.get('clear') === 'true';
         if (isClear) {
-        localStorage.removeItem(CHAVE_STORAGE); 
-        console.log("LocalStorage limpo. Simulação de primeiro acesso na próxima visita.");
-    
-        // Redireciona para a URL limpa para iniciar o teste do zero
-        window.location.href = window.location.origin + window.location.pathname; 
-        return; // Para o script
+            localStorage.removeItem(CHAVE_STORAGE); 
+            console.log("LocalStorage limpo. Simulação de primeiro acesso na próxima visita.");
+            
+            // Redireciona para a URL limpa para iniciar o teste do zero
+            window.location.href = window.location.origin + window.location.pathname; 
+            return; 
         }
+
+        // 3. Lógica de Bypass (Parâmetro ?bypass=true)
+        const isBypass = urlParams.get('bypass') === 'true';
+        if (isBypass) {
+            areaDoVideo.style.display = 'block';
+            mensagemExp.style.display = 'none';
+            mensagemTempoRestante.innerHTML = "MODO TESTE ATIVADO (Bypass). O vídeo não expirará.";
+            console.log("Modo Bypass Ativado. Expiração desativada.");
+            return; 
+        }
+        // --- Fim da Lógica de Bypass/Limpeza ---
+
 
         let inicioVisualizacao;
         let tempoAtual = Date.now();
@@ -129,7 +144,8 @@
                     clearInterval(intervaloContador);
                 } else {
                     const segundos = Math.ceil(restanteMS / 1000);
-                    mensagemTempoRestante.innerHTML = `Disponivel por: ${segundos} segundos.`;
+                    // Atualização da mensagem para mostrar o tempo restante
+                    mensagemTempoRestante.innerHTML = `Disponível por: **${segundos} segundos** restantes.`; 
                 }
             }
 
@@ -139,6 +155,7 @@
     </script>
 </body>
 </html>
+
 
 
 
