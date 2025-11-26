@@ -69,9 +69,8 @@
         </div>
     </div>
 
-    <script>
+   <script>
         // === CONFIGURAÇÃO ===
-        // 1. Defina o tempo de expiração TOTAL em SEGUNDOS.
         const TEMPO_LIMITE_SEGUNDOS = 60; // 5 minutos (300 segundos)
         // ====================
 
@@ -82,15 +81,33 @@
         const mensagemExp = document.getElementById('mensagemExpiracao');
         const mensagemTempoRestante = document.getElementById('tempoRestanteMensagem');
 
+        // --- NOVO: Lógica de Bypass ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const isBypass = urlParams.get('bypass') === 'true';
+
+        if (isBypass) {
+            // Se o bypass estiver ativado, mostramos o vídeo e a mensagem de tempo, mas paramos a lógica de expiração
+            areaDoVideo.style.display = 'block';
+            mensagemExp.style.display = 'none';
+            mensagemTempoRestante.innerHTML = "MODO TESTE ATIVADO (Bypass). O vídeo não expirará.";
+            console.log("Modo Bypass Ativado. Expiração desativada.");
+            // Opcional: Se quiser limpar o localStorage durante o teste
+            // localStorage.removeItem(CHAVE_STORAGE); 
+            
+            // Paramos o script aqui para evitar a lógica de expiração
+            // Retorna a função para não executar o resto do código
+            return; 
+        }
+        // --- Fim da Lógica de Bypass ---
+
+
         let inicioVisualizacao;
         let tempoAtual = Date.now();
 
         // 1. Verifica se o usuário já acessou (se a chave existe no armazenamento local)
         if (localStorage.getItem(CHAVE_STORAGE)) {
-            // Se existir, usa o tempo registrado do primeiro acesso
             inicioVisualizacao = parseInt(localStorage.getItem(CHAVE_STORAGE));
         } else {
-            // Se não existir, registra o tempo AGORA (primeiro acesso)
             inicioVisualizacao = tempoAtual;
             localStorage.setItem(CHAVE_STORAGE, inicioVisualizacao);
         }
@@ -104,34 +121,33 @@
             mensagemExp.style.display = 'block';
             mensagemTempoRestante.style.display = 'none';
         } else {
-            // O vídeo ainda está ativo: mostra o vídeo
+            // O vídeo ainda está ativo: mostra o vídeo e o contador
             areaDoVideo.style.display = 'block';
             mensagemExp.style.display = 'none';
 
-            // 3. Função para atualizar o contador restante (opcional, mas útil)
+            // 3. Função para atualizar o contador restante
             function atualizarContador() {
                 const agora = Date.now();
                 const decorrido = agora - inicioVisualizacao;
                 const restanteMS = TEMPO_LIMITE_MS - decorrido;
                 
                 if (restanteMS <= 0) {
-                    // Se o contador atingir zero enquanto o usuário assiste
                     areaDoVideo.style.display = 'none';
                     mensagemExp.style.display = 'block';
-                    clearInterval(intervaloContador); // Para de atualizar
+                    clearInterval(intervaloContador);
                 } else {
                     const segundos = Math.ceil(restanteMS / 1000);
                     mensagemTempoRestante.innerHTML = `O vídeo expirará em ${segundos} segundos.`;
                 }
             }
 
-            // Inicia a atualização do contador a cada segundo
             const intervaloContador = setInterval(atualizarContador, 1000);
-            actualizarContador(); // Chama imediatamente para carregar o tempo inicial
+            atualizarContador(); 
         }
     </script>
 </body>
 </html>
+
 
 
 
