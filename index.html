@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AUTO ESCOLA GUARDA DOS FERREIROS - CURSINHO</title>
+    <title>AUTO ESCOLA GUARDA - by larry</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         body {
@@ -29,6 +29,7 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            margin-bottom: 20px; /* Adicionado margem inferior para separar do formulário */
         }
         h1 {
             color: #f1c40f;
@@ -37,7 +38,7 @@
             margin-bottom: 20px;
             font-size: 1.8em;
         }
-        /* Estilos dos botões */
+        /* Estilos dos botões de navegação */
         .button-container {
             margin-bottom: 25px;
             border-bottom: 1px solid #4a6784;
@@ -76,10 +77,55 @@
         .hidden {
             display: none;
         }
+        /* Estilos do Formulário de Presença */
+        .presence-container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #34495e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            margin-bottom: 40px; /* Espaçamento antes dos vídeos */
+        }
+        .presence-container input[type="text"],
+        .presence-container input[type="email"] {
+            width: calc(80% - 16px);
+            padding: 8px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .presence-container label {
+            display: block;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="page-container">
+        
+        <div class="presence-container">
+            <h2>✅ Registro de Presença</h2>
+            
+            <form action="https://formsubmit.co/autoescolaguarda@gmail.com" method="POST" id="presenceForm">
+                
+                <p>Preencha para registrar sua frequência nesta sessão de aulas.</p>
+
+                <label for="nome">Nome Completo:</label>
+                <input type="text" name="Nome Completo" id="nome" required>
+
+                <label for="email">Email:</label>
+                <input type="email" name="Email" id="email" required>
+                
+                <input type="hidden" name="_next" value="https://autoescola-gf.github.io/cursinho/">
+                
+                <input type="hidden" name="_captcha" value="false">
+
+                <button type="submit" style="padding: 10px 20px; background-color: #f1c40f; color: #2c3e50; border: none; border-radius: 5px; cursor: pointer;">
+                    Registrar Presença
+                </button>
+            </form>
+        </div>
 
         <div class="button-container">
             <button class="course-button" data-course-id="course1" onclick="showCourse('course1')">Aula 1</button>
@@ -128,12 +174,11 @@
 
     </div>
 
- <script>
+    <script>
         // === CONFIGURAÇÃO GLOBAL ===
         const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (AJUSTE AQUI. Ex: 3600 para 1 hora)
         const TEMPO_LIMITE_MS = TEMPO_LIMITE_SEGUNDOS * 1000;
         
-        // VARIÁVEL PARA O CONTADOR ATIVO
         let intervaloContador = null;
 
         // --- Lógica de Parâmetros ---
@@ -141,12 +186,10 @@
         const isBypass = urlParams.get('bypass') === 'true';
         const isClear = urlParams.get('clear') === 'true';
         
-        // Função auxiliar para formatar com zero à esquerda (01, 05, etc.)
         const pad = (num) => String(num).padStart(2, '0');
 
         // --- 1. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO ---
         function initializeTimer(courseId, storageKey) {
-            // Limpa o contador anterior se houver
             if (intervaloContador) {
                 clearInterval(intervaloContador);
             }
@@ -182,7 +225,6 @@
                 areaDoVideo.classList.remove('hidden');
                 mensagemExp.classList.add('hidden');
 
-                // Inicia o contador
                 intervaloContador = setInterval(function() {
                     const agora = Date.now();
                     const decorrido = agora - inicioVisualizacao;
@@ -193,7 +235,6 @@
                         mensagemExp.classList.remove('hidden');
                         clearInterval(intervaloContador);
                     } else {
-                        // --- LÓGICA DE CONVERSÃO PARA HH:MM:SS ---
                         let totalSeconds = Math.floor(restanteMS / 1000);
 
                         const hours = Math.floor(totalSeconds / 3600);
@@ -216,14 +257,11 @@
             const selectedCourse = document.getElementById(courseId);
             const storageKey = selectedCourse.getAttribute('data-storage-key');
             
-            // 2.1 Esconde todos os blocos e remove o timer de qualquer um ativo
             allCourses.forEach(course => course.classList.add('hidden'));
             if (intervaloContador) { clearInterval(intervaloContador); }
 
-            // 2.2 Mostra o bloco selecionado
             selectedCourse.classList.remove('hidden');
 
-            // 2.3 Atualiza o estilo do botão
             allButtons.forEach(button => {
                 button.classList.remove('active');
                 if (button.getAttribute('data-course-id') === courseId) {
@@ -231,13 +269,11 @@
                 }
             });
 
-            // 2.4 INICIA O TIMER PARA O CURSO SELECIONADO
             initializeTimer(courseId, storageKey);
         }
 
         // --- 3. INICIALIZAÇÃO E LIMPEZA (EXECUTA AO CARREGAR A PÁGINA) ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Lógica de Limpeza
             if (isClear) {
                 localStorage.removeItem('acesso_curso1');
                 localStorage.removeItem('acesso_curso2');
@@ -246,39 +282,8 @@
                 return; 
             }
 
-            // Inicia o primeiro curso por padrão
             showCourse('course1'); 
-            
-            // Corrige o estado inicial dos botões (o showCourse já deve ter feito isso, mas é uma garantia)
-            document.querySelector('[data-course-id="course1"]').classList.add('active');
         });
     </script>
 </body>
-    <div class="video-container" style="margin-top: 50px;">
-    <h2>Registro de Presença</h2>
-    
-    <form action="https://formsubmit.co/autoescolaguarda@gmail.com" method="POST" id="presenceForm">
-        
-        <p>Preencha para registrar sua frequência na aula.</p>
-
-        <label for="nome" style="display: block; margin-top: 10px;">Nome Completo:</label>
-        <input type="text" name="Nome Completo" id="nome" required 
-               style="width: 80%; padding: 8px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc;">
-
-        <label for="email" style="display: block;">Email:</label>
-        <input type="email" name="Email" id="email" required 
-               style="width: 80%; padding: 8px; margin-bottom: 25px; border-radius: 4px; border: 1px solid #ccc;">
-        
-        <input type="hidden" name="_next" value="SUA_URL_DE_SUCESSO">
-        
-        <input type="hidden" name="_captcha" value="false">
-
-        <button type="submit" style="padding: 10px 20px; background-color: #f1c40f; color: #2c3e50; border: none; border-radius: 5px; cursor: pointer;">
-            Registrar Presença
-        </button>
-    </form>
-</div>
 </html>
-
-
-
