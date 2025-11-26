@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CURSOS COM EXPIRAÇÃO E NAVEGAÇÃO</title>
+    <title>AUTO ESCOLA GUARDA DOS FERREIROS - CURSINHO</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         body {
@@ -74,59 +74,33 @@
             border-radius: 5px;
             margin-bottom: 20px;
         }
+        /* Classes de Controle de Visibilidade */
         .hidden {
             display: none;
         }
-        /* Estilos do Formulário de Presença */
-        .presence-container {
-            max-width: 800px;
-            width: 100%;
-            background-color: #34495e;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            margin-bottom: 40px;
+        .content-hidden {
+            display: none; /* Usado para esconder toda a área de cursos se a presença for inválida */
         }
-        .presence-container input[type="text"],
-        .presence-container input[type="email"] {
-            width: calc(80% - 16px);
-            padding: 8px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        .presence-container label {
-            display: block;
-            margin-top: 10px;
+        #instructionMessage {
+            margin-top: 50px;
+            background-color: #e74c3c;
+            padding: 20px;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="page-container">
+    
+    <div class="page-container hidden" id="instructionMessage">
+        <p>Você precisa registrar sua presença para acessar o conteúdo do curso.</p>
+        <button onclick="window.location.href='presenca.html'" 
+                style="padding: 10px 20px; background-color: #f1c40f; color: #2c3e50; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px;">
+            Registrar Presença
+        </button>
+    </div>
+
+    <div class="page-container content-hidden" id="courseContent">
         
-        <div class="presence-container" id="presenceArea">
-            <h2>✅ Registro de Presença</h2>
-            
-            <form action="https://formsubmit.co/autoescolaguarda@gmail.com" method="POST" id="presenceForm">
-                
-                <p>Preencha para registrar sua frequência nesta aula.</p>
-
-                <label for="nome">Nome Completo:</label>
-                <input type="text" name="Nome Completo" id="nome" required>
-
-                <label for="email">Email:</label>
-                <input type="email" name="Email" id="email" required>
-                
-                <input type="hidden" name="_next" value="https://autoescola-gf.github.io/cursinho/?presenca=true">
-                
-                <input type="hidden" name="_captcha" value="false">
-
-                <button type="submit" style="padding: 10px 20px; background-color: #f1c40f; color: #2c3e50; border: none; border-radius: 5px; cursor: pointer;">
-                    Registrar Presença
-                </button>
-            </form>
-        </div>
-
         <div class="button-container">
             <button class="course-button" data-course-id="course1" onclick="showCourse('course1')">Aula 1</button>
             <button class="course-button" data-course-id="course2" onclick="showCourse('course2')">Aula 2</button>
@@ -179,7 +153,7 @@
         const TEMPO_LIMITE_SEGUNDOS = 300; // 5 minutos (Ajuste para o timer dos vídeos)
         const TEMPO_LIMITE_MS = TEMPO_LIMITE_SEGUNDOS * 1000;
         const LIMITE_PRESENCA_MS = 24 * 60 * 60 * 1000; // 24 horas em milissegundos
-        const CHAVE_PRESENCA = 'lastPresenceTime'; // Chave para o localStorage
+        const CHAVE_PRESENCA = 'lastPresenceTime'; 
         
         let intervaloContador = null;
 
@@ -187,48 +161,42 @@
         const urlParams = new URLSearchParams(window.location.search);
         const isBypass = urlParams.get('bypass') === 'true';
         const isClear = urlParams.get('clear') === 'true';
-        const isPresenceSuccess = urlParams.get('presenca') === 'true'; // Novo parâmetro
+        const isPresenceSuccess = urlParams.get('presenca') === 'true'; 
         
         const pad = (num) => String(num).padStart(2, '0');
 
-       // --- FUNÇÃO DE CONTROLE DE PRESENÇA (MODIFICADA) ---
-function checkPresence() {
-    const courseContent = document.getElementById('courseContent');
-    const instructionMessage = document.getElementById('instructionMessage');
-    
-    const lastTime = parseInt(localStorage.getItem(CHAVE_PRESENCA));
-    const currentTime = Date.now();
-    
-    // Se o tempo não está salvo OU se 24 horas se passaram
-    if (isNaN(lastTime) || (currentTime - lastTime) >= LIMITE_PRESENCA_MS) {
-        // Presença inválida ou expirada
-        courseContent.classList.add('content-hidden'); // Esconde o curso
-        instructionMessage.style.display = 'block'; // Mostra a instrução e o botão
-    } else {
-        // Presença válida
-        courseContent.classList.remove('content-hidden'); // Mostra o curso
-        instructionMessage.style.display = 'none'; // Esconde a instrução
-    }
-}
-
-// --- 3. INICIALIZAÇÃO E LIMPEZA (EXECUTA AO CARREGAR A PÁGINA) ---
-document.addEventListener('DOMContentLoaded', function() {
-    // ... (Sua lógica de Limpeza) ...
-    if (isClear) {
-        // ... (Lógica de limpeza) ...
-        return; 
-    }
-
-    // 1. Verifica Acesso (Presença)
-    checkPresence();
-
-    // 2. Inicia o primeiro curso, APENAS se estiver visível
-    if (!document.getElementById('courseContent').classList.contains('content-hidden')) {
-        showCourse('course1'); 
-    }
-});
+        // --- 1. FUNÇÃO DE CONTROLE DE PRESENÇA (MOSTRA/ESCONDE CONTEÚDO) ---
+        function checkPresence() {
+            const courseContent = document.getElementById('courseContent');
+            const instructionMessage = document.getElementById('instructionMessage');
+            
+            // Se veio do Formsubmit (após redirecionamento), registra o tempo
+            if (isPresenceSuccess) {
+                localStorage.setItem(CHAVE_PRESENCA, Date.now());
+                // Limpa o parâmetro da URL para não registrar o timestamp toda vez que o usuário recarregar
+                const cleanUrl = window.location.origin + window.location.pathname;
+                window.history.replaceState(null, null, cleanUrl);
+            }
+            
+            // Verifica se 24h se passaram
+            const lastTime = parseInt(localStorage.getItem(CHAVE_PRESENCA));
+            const currentTime = Date.now();
+            
+            // Se o tempo não está salvo OU se 24 horas se passaram
+            if (isNaN(lastTime) || (currentTime - lastTime) >= LIMITE_PRESENCA_MS) {
+                // Presença inválida ou expirada
+                courseContent.classList.add('content-hidden'); // Esconde o curso
+                instructionMessage.classList.remove('hidden'); // Mostra a instrução
+                return false; // Presença Inválida
+            } else {
+                // Presença válida
+                courseContent.classList.remove('content-hidden'); // Mostra o curso
+                instructionMessage.classList.add('hidden'); // Esconde a instrução
+                return true; // Presença Válida
+            }
+        }
         
-        // --- FUNÇÃO PRINCIPAL DE EXPIRAÇÃO (Não alterada) ---
+        // --- 2. FUNÇÃO PRINCIPAL DE EXPIRAÇÃO DO VÍDEO ---
         function initializeTimer(courseId, storageKey) {
             if (intervaloContador) {
                 clearInterval(intervaloContador);
@@ -238,7 +206,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const mensagemExp = document.getElementById('mensagemExpiracao' + courseId.slice(-1));
             const mensagemTempoRestante = document.getElementById('tempoRestanteMensagem' + courseId.slice(-1));
             
-            // ... (Restante da lógica do timer permanece o mesmo) ...
             if (isBypass) {
                 areaDoVideo.classList.remove('hidden');
                 mensagemExp.classList.add('hidden');
@@ -274,7 +241,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         clearInterval(intervaloContador);
                     } else {
                         let totalSeconds = Math.floor(restanteMS / 1000);
-
                         const hours = Math.floor(totalSeconds / 3600);
                         totalSeconds %= 3600;
                         const minutes = Math.floor(totalSeconds / 60);
@@ -288,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // --- FUNÇÃO DE NAVEGAÇÃO ENTRE AULAS (Não alterada) ---
+        // --- 3. FUNÇÃO DE NAVEGAÇÃO ENTRE AULAS ---
         function showCourse(courseId) {
             const allCourses = document.querySelectorAll('.video-block');
             const allButtons = document.querySelectorAll('.course-button');
@@ -310,26 +276,27 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeTimer(courseId, storageKey);
         }
 
-        // --- 3. INICIALIZAÇÃO E LIMPEZA (EXECUTA AO CARREGAR A PÁGINA) ---
+        // --- 4. INICIALIZAÇÃO DA PÁGINA ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Lógica de Limpeza do Timer do Vídeo
+            // Lógica de Limpeza Geral (Timer de Vídeo e Presença)
             if (isClear) {
                 localStorage.removeItem('acesso_curso1');
                 localStorage.removeItem('acesso_curso2');
-                localStorage.removeItem(CHAVE_PRESENCA); // Limpa também o registro de presença!
+                localStorage.removeItem(CHAVE_PRESENCA); 
                 
                 console.log("LocalStorage de vídeos e presença limpo. Redirecionando...");
                 window.location.href = window.location.origin + window.location.pathname; 
                 return; 
             }
 
-            // 1. Verifica e esconde/mostra o formulário de presença
-            checkPresence();
+            // 1. Verifica se a presença é válida e esconde/mostra o conteúdo
+            const isAccessValid = checkPresence();
 
-            // 2. Inicia o primeiro curso por padrão
-            showCourse('course1'); 
+            // 2. Inicia o primeiro curso APENAS se o acesso for válido
+            if (isAccessValid) {
+                showCourse('course1'); 
+            }
         });
     </script>
 </body>
 </html>
-
